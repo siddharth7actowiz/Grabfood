@@ -180,14 +180,15 @@ for data in json_data:
         print(f"Restaurant batches: {rest_batches}")
         print(f"Menu batches: {menu_batches}")
 
-    except Exception as e:
+except Exception as e:
         con.rollback()
         print("Transaction Failed :x:")
         print("Error:", e)
 
-    finally:
+finally:
         cursor.close()
         con.close()
 
     end_time = datetime.now()
     print("Execution Time:", end_time - start_time)
+
