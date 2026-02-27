@@ -26,6 +26,52 @@ def load_json(input_src_folder):
 
     return json_data
 
+class Offer(BaseModel):
+    Title: Optional[str]
+    SubTitle: Optional[str]
+
+
+class RestaurantDetails(BaseModel):
+    Restaurant_Name: Optional[str]
+    Restaurant_ID: Optional[str]
+    Branch_Name: Optional[str]
+    Cuisine: Optional[str]
+    Restaurant_Image: Optional[str]
+
+    Tip: List[str]
+    Timezone: Optional[str]
+    ETA: Optional[int]
+    DeliveryOptions: List
+    Rating: Optional[float]
+    Is_Open: Optional[bool]
+
+    Currency_Code: Optional[str]
+    Currency_Symbol: Optional[str]
+
+    Offers: List[Offer]
+    Timing_Everyday: Optional[str]
+
+
+class MenuItem(BaseModel):
+    Restaurant_ID: Optional[str]
+    Category_Name: Optional[str]
+    Item_ID: Optional[str]
+    Item_Name: Optional[str]
+    Item_Description: Optional[str]
+
+    Item_Price: Optional[float]
+    Item_Discounted_Price: Optional[float]
+
+    Item_Image_URL: List[Optional[str]]
+    Item_Thumbnail_URL: List[Optional[str]]
+
+    Item_Available: bool
+    Is_Top_Seller: bool
+
+
+class Rest(BaseModel):
+    Restaurant_Details: RestaurantDetails
+    Menu_Items: List[MenuItem]
 
 
 def parser(validated_json):
@@ -85,7 +131,7 @@ def parser(validated_json):
                     "Item_Discounted_Price": float(item.get("discountedPriceInMin", 0)) / 100,
                     "Item_Image_URL": [item.get("imgHref") or (item.get("images")[0] if item.get("images") else None)],
                     "Item_Thumbnail_URL": [item.get("thumbImages")[0] if item.get("thumbImages") else None],
-                    "Item_Available": item.get("available"),
+                    "Item_Available":True if item.get("available") else False ,
                     "Is_Top_Seller": True if item.get("topSeller") else False,
                 }
 
@@ -99,9 +145,12 @@ def parser(validated_json):
 
         Rest_Data["Restaurant_Details"] = restaurant_details
         Rest_Data["Menu_Items"] = products_list
-        all_data.append(Rest_Data)
-
-    return all_data
+        try:
+            validated_rest = Rest(**Rest_Data)
+            all_data.append(Rest_Data)  
+            return all_data
+        except ValidationError as e:
+            print(e)
 
 
 def export_structured_data_func(struct_json_data):
@@ -109,6 +158,8 @@ def export_structured_data_func(struct_json_data):
         file.write(json.dumps(struct_json_data, indent=4))
 
 
+
+#Function Calls
 validated_json=load_json(input_src_folder)
 struct_json_data=parser(validated_json)
 export_structured_data_func(struct_json_data)
