@@ -166,14 +166,28 @@ for data in json_data:
 
         menu_values.append(values)
 
-    # Bulk insert with using execute many
 
-Restaurant_batch_count=batch_insert(cursor,insert_rest_values,rest_values)
-Menu_items_batch_count=batch_insert(cursor,insert_menu_sql,menu_values)
-print(f" Toatal Batches in restaurant table{Restaurant_batch_count}")
-print(f" Toatal Batches in in menu_items_table table{Menu_items_batch_count}")
+ try:
+        print("Starting Restaurant Batch Insert...")
+        rest_batches = batch_insert(cursor, insert_rest_query, restaurant_values)
 
-end_time=time.time()
-print(end_time-st_time)
-cursor.close()
-con.close()
+        print("Starting Menu Batch Insert...")
+        menu_batches = batch_insert(cursor, insert_menu_query, menu_values)
+
+        con.commit()
+
+        print("Transaction Successful :white_check_mark:")
+        print(f"Restaurant batches: {rest_batches}")
+        print(f"Menu batches: {menu_batches}")
+
+    except Exception as e:
+        con.rollback()
+        print("Transaction Failed :x:")
+        print("Error:", e)
+
+    finally:
+        cursor.close()
+        con.close()
+
+    end_time = datetime.now()
+    print("Execution Time:", end_time - start_time)
