@@ -2,10 +2,12 @@ import json
 import time
 import mysql.connector
 from typing import *
+from config import BATCH_SIZE,USER,PASSWORD,PORT,DB,HOST
+
 
 
 #Batch Function
-def batch_insert(cursor, con,insert_query: str, values: List[Tuple], BATCH_SIZE: int =100):
+def batch_insert(cursor, con,insert_query: str, values: List[Tuple], BATCH_SIZE: int = BATCH_SIZE):
 
     total_records = len(values)
     batch_count = 0
@@ -18,7 +20,7 @@ def batch_insert(cursor, con,insert_query: str, values: List[Tuple], BATCH_SIZE:
             cursor.executemany(insert_query, batch)
             con.commit()
             batch_count += 1
-            print(f"Inserted batch {batch_count} ({start} → {end})")
+            # print(f"Inserted batch {batch_count} ({start} → {end})")
         except Exception as e:
             print(f"Batch failed ({start} → {end})")
             print("Error:", e)
@@ -26,7 +28,7 @@ def batch_insert(cursor, con,insert_query: str, values: List[Tuple], BATCH_SIZE:
     return batch_count
 
 
-#create tble
+#create table
 def create_tables(cursor):
 
     cursor.execute("""
@@ -55,7 +57,7 @@ def create_tables(cursor):
         id INT AUTO_INCREMENT PRIMARY KEY,
         Restaurant_ID VARCHAR(50),
         Category_Name VARCHAR(255),
-        Item_Id VARCHAR(500) ,
+        Item_Id VARCHAR(500) UNIQUE,
         Item_Name VARCHAR(255) NOT NULL,
         Item_Description TEXT,
         Item_Price DECIMAL(10,2),
@@ -124,11 +126,11 @@ def insert_into_database(json_data):
     start_time = time.time()
 
     con = mysql.connector.connect(
-        user="root",
-        password="actowiz",
-        host="localhost",
-        port=3306,
-        database="grabfood"
+        user=USER,
+        password=PASSWORD,
+        host=HOST,
+        port=PORT,
+        database=DB
     )
 
     cursor = con.cursor()
@@ -146,24 +148,23 @@ def insert_into_database(json_data):
             Offers, Timing_Everyday
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE Restaurant_Name = VALUES(Restaurant_Name)
         """
 
         insert_menu_query = """
-        INSERT  INTO  MENU_ITEMS_TABLE (
+        INSERT IGNORE INTO  MENU_ITEMS_TABLE (
             Restaurant_ID, Category_Name, Item_Id, Item_Name,
             Item_Description, Item_Price, Item_Discounted_Price,
             Item_Image_URL, Item_Thumbnail_URL,
             Item_Available, Is_Top_Seller
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE Item_Id = VALUES(Item_Id)
         """
 
-        # Restaurant Data
-         rest_batches = batch_insert(cursor, con,insert_rest_query, rest_values)
-        # Menu Items Data
-         menu_batches = batch_insert(cursor,con, insert_menu_query, menu_values)
+        # print("Starting Restaurant Batch Insert...")
+        rest_batches = batch_insert(cursor, con,insert_rest_query, rest_values)
+
+        # print("Starting Menu Batch Insert...")
+        menu_batches = batch_insert(cursor,con, insert_menu_query, menu_values)
 
 
         print("Restaurant batches:", rest_batches)
@@ -177,7 +178,4 @@ def insert_into_database(json_data):
 
     finally:
         cursor.close()
-
         con.close()
-
-
