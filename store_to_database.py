@@ -146,20 +146,23 @@ def insert_into_database(json_data):
             Offers, Timing_Everyday
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE Restaurant_Name = VALUES(Restaurant_Name)
         """
 
         insert_menu_query = """
-        INSERT IGNORE INTO  MENU_ITEMS_TABLE (
+        INSERT  INTO  MENU_ITEMS_TABLE (
             Restaurant_ID, Category_Name, Item_Id, Item_Name,
             Item_Description, Item_Price, Item_Discounted_Price,
             Item_Image_URL, Item_Thumbnail_URL,
             Item_Available, Is_Top_Seller
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE Item_Id = VALUES(Item_Id)
         """
 
+        # Restaurant Data
          rest_batches = batch_insert(cursor, con,insert_rest_query, rest_values)
-
+        # Menu Items Data
          menu_batches = batch_insert(cursor,con, insert_menu_query, menu_values)
 
 
@@ -176,3 +179,4 @@ def insert_into_database(json_data):
         cursor.close()
 
         con.close()
+
