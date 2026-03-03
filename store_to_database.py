@@ -55,7 +55,7 @@ def create_tables(cursor):
         id INT AUTO_INCREMENT PRIMARY KEY,
         Restaurant_ID VARCHAR(50),
         Category_Name VARCHAR(255),
-        Item_Id VARCHAR(500) UNIQUE,
+        Item_Id VARCHAR(500) ,
         Item_Name VARCHAR(255) NOT NULL,
         Item_Description TEXT,
         Item_Price DECIMAL(10,2),
@@ -179,4 +179,5 @@ def insert_into_database(json_data):
         cursor.close()
 
         con.close()
+
 
