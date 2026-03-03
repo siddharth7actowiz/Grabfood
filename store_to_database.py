@@ -3,11 +3,9 @@ import time
 import mysql.connector
 from typing import *
 
-batch_size = 100
-
 
 #Batch Function
-def batch_insert(cursor, con,insert_query: str, values: List[Tuple], BATCH_SIZE: int = batch_size):
+def batch_insert(cursor, con,insert_query: str, values: List[Tuple], BATCH_SIZE: int =100):
 
     total_records = len(values)
     batch_count = 0
@@ -20,7 +18,7 @@ def batch_insert(cursor, con,insert_query: str, values: List[Tuple], BATCH_SIZE:
             cursor.executemany(insert_query, batch)
             con.commit()
             batch_count += 1
-            # print(f"Inserted batch {batch_count} ({start} → {end})")
+            print(f"Inserted batch {batch_count} ({start} → {end})")
         except Exception as e:
             print(f"Batch failed ({start} → {end})")
             print("Error:", e)
@@ -160,11 +158,9 @@ def insert_into_database(json_data):
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
-        # print("Starting Restaurant Batch Insert...")
-        rest_batches = batch_insert(cursor, con,insert_rest_query, rest_values)
+         rest_batches = batch_insert(cursor, con,insert_rest_query, rest_values)
 
-        # print("Starting Menu Batch Insert...")
-        menu_batches = batch_insert(cursor,con, insert_menu_query, menu_values)
+         menu_batches = batch_insert(cursor,con, insert_menu_query, menu_values)
 
 
         print("Restaurant batches:", rest_batches)
@@ -178,4 +174,5 @@ def insert_into_database(json_data):
 
     finally:
         cursor.close()
+
         con.close()
