@@ -25,6 +25,8 @@ def parser(validated_json):
         merchant_data = raw_json_dict.get("merchant")
         if not merchant_data:
             continue
+        tips = merchant_data.get("sofConfiguration", {}).get("tips")
+                
         restaurant_details = {
 
             "Restaurant_Name": merchant_data.get("name"),
@@ -32,9 +34,7 @@ def parser(validated_json):
             "Branch_Name": merchant_data.get("branchName"),
             "Cuisine": merchant_data.get("cuisine"),
             "Restaurant_Image": merchant_data.get("photoHref"),
-
-            "Tip": [merchant_data.get("sofConfiguration", {}).get("tips")] or [],
-
+            "Tip": tips if tips else [],
             "Timezone": merchant_data.get("timeZone"),
             "ETA": merchant_data.get("ETA"),
             "DeliveryOptions": merchant_data.get("deliveryOptions", []),
@@ -97,5 +97,6 @@ def parser(validated_json):
 
         all_data.append(Rest_Data)
     return all_data
+
 
 
